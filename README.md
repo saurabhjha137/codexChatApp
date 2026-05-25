@@ -244,6 +244,219 @@ Backend-only run while Node.js is being installed:
 make backend
 ```
 
+## Production Setup
+
+The app is prepared for:
+
+- Frontend: Vercel
+- Backend: Railway
+- Database: Neon PostgreSQL
+
+Production uses PostgreSQL through SQLAlchemy + `psycopg`, Alembic migrations, Gunicorn with Uvicorn workers, strict CORS, trusted hosts, WSS WebSockets, reconnecting frontend sockets, and HTTPS-compatible browser notifications.
+
+Never commit real production secrets. Set them in Railway/Vercel dashboards.
+
+## NeonDB Setup
+
+Create a Neon PostgreSQL database and copy the pooled connection string. Railway should receive it as:
+
+```bash
+DATABASE_URL=postgresql://USER:PASSWORD@HOST/neondb?sslmode=require&channel_binding=require
+```
+
+The backend normalizes `postgresql://` to SQLAlchemy's `postgresql+psycopg://` internally, so Neon connection strings work directly.
+
+Run migrations locally against the configured `DATABASE_URL`:
+
+```bash
+cd backend
+. .venv/bin/activate
+alembic upgrade head
+```
+
+Create a new migration after model changes:
+
+```bash
+cd backend
+alembic revision --autogenerate -m "describe change"
+alembic upgrade head
+```
+
+## Railway Deployment
+
+Backend deployment files:
+
+```text
+backend/railway.json
+backend/Procfile
+backend/alembic.ini
+backend/alembic/
+```
+
+Railway start command:
+
+```bash
+alembic upgrade head && gunicorn app.main:app --worker-class uvicorn.workers.UvicornWorker --workers ${WEB_CONCURRENCY:-2} --bind 0.0.0.0:${PORT:-8000} --timeout 120 --graceful-timeout 30
+```
+
+Set Railway root directory to:
+
+```text
+backend
+```
+
+Railway environment variables:
+
+```bash
+APP_NAME=Codex Chat App
+APP_ENV=production
+DATABASE_URL=<Neon PostgreSQL pooled URL>
+CORS_ORIGINS=https://<your-vercel-domain>
+TRUSTED_HOSTS=<your-railway-domain>,*.railway.app,*.up.railway.app
+FRONTEND_URL=https://<your-vercel-domain>
+LOG_LEVEL=INFO
+RATE_LIMIT_PER_MINUTE=240
+WEBSOCKET_HEARTBEAT_SECONDS=25
+ADMIN_USERNAME=<admin username>
+ADMIN_PASSWORD=<strong admin password>
+ADMIN_TOKEN_SECRET=<long random secret>
+ADMIN_TOKEN_TTL_MINUTES=480
+WEB_CONCURRENCY=2
+```
+
+After Railway creates the backend domain, verify:
+
+```bash
+curl https://<your-railway-domain>/health
+```
+
+Expected:
+
+```json
+{"status":"ok"}
+```
+
+## Vercel Deployment
+
+Frontend deployment file:
+
+```text
+frontend/vercel.json
+```
+
+Set Vercel root directory to:
+
+```text
+frontend
+```
+
+Build command:
+
+```bash
+npm run build
+```
+
+Output directory:
+
+```text
+dist
+```
+
+Vercel environment variables:
+
+```bash
+VITE_API_BASE_URL=https://<your-railway-domain>
+VITE_WS_BASE_URL=wss://<your-railway-domain>
+```
+
+After Vercel deploys, update Railway:
+
+```bash
+CORS_ORIGINS=https://<your-vercel-domain>
+FRONTEND_URL=https://<your-vercel-domain>
+```
+
+## Deployment Diagram
+
+```mermaid
+flowchart LR
+  User[Browser / Mobile] -->|HTTPS| Vercel[Vercel React App]
+  Vercel -->|HTTPS REST| Railway[Railway FastAPI]
+  Vercel <-->|WSS WebSocket| Railway
+  Railway -->|SSL PostgreSQL| Neon[(Neon PostgreSQL)]
+  Railway -->|Alembic upgrade head| Neon
+```
+
+## Production WebSocket Architecture
+
+```mermaid
+sequenceDiagram
+  participant C as React Client
+  participant W as Railway WebSocket
+  participant D as Neon DB
+  C->>W: WSS /ws/{user_id}
+  W-->>C: HEARTBEAT
+  C-->>W: PING
+  W-->>C: PONG
+  C->>W: NEW_MESSAGE
+  W->>D: Persist message
+  W-->>C: NEW_MESSAGE echo
+  W-->>C: MESSAGE_DELIVERED / MESSAGE_READ
+  alt network interruption
+    C--xW: disconnected
+    C->>C: exponential backoff
+    C->>W: reconnect with session user id
+  end
+```
+
+The frontend WebSocket client automatically reconnects with exponential backoff up to 30 seconds. Duplicate server-side sessions are closed by the backend connection manager.
+
+## Notification Architecture
+
+Browser notifications work on deployed HTTPS domains. They may not work on LAN HTTP URLs because browsers require secure contexts for the Notification API.
+
+Notification behavior:
+
+- Sound uses `frontend/public/sounds/notifSound.mp3`.
+- Browser notifications use `Notification.requestPermission()`.
+- Notifications fire only for incoming messages.
+- Self messages do not trigger notifications.
+- Click focuses the app and opens the conversation.
+- Denied/unsupported/insecure states are shown in the sidebar.
+
+## Deployment Troubleshooting
+
+### Backend cannot connect to Neon
+
+- Confirm `DATABASE_URL` is set in Railway.
+- Confirm it includes `sslmode=require`.
+- Confirm Railway logs do not show an Alembic failure.
+
+### Vercel frontend cannot call backend
+
+- Confirm `VITE_API_BASE_URL` is the Railway HTTPS URL.
+- Confirm Railway `CORS_ORIGINS` includes the exact Vercel URL.
+- Confirm the backend health endpoint works from your browser.
+
+### WebSocket fails in production
+
+- Confirm `VITE_WS_BASE_URL` starts with `wss://`.
+- Confirm Railway backend domain is reachable.
+- Check browser DevTools Network tab for `/ws/{user_id}`.
+- Check Railway logs for rejected users or disconnects.
+
+### Admin login fails
+
+- Confirm Railway has `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and `ADMIN_TOKEN_SECRET`.
+- Production startup rejects placeholder admin secrets.
+
+### Browser notifications do not show
+
+- Confirm frontend is opened over HTTPS.
+- Confirm browser permission is granted.
+- Confirm the message is incoming and the tab is inactive/minimized.
+- Check DevTools logs prefixed with `[notifications]`.
+
 Manual setup:
 
 ```bash

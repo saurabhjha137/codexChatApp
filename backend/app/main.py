@@ -3,6 +3,7 @@ import logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from app.core.config import get_settings
 from app.core.exceptions import AppError
 from app.core.logging import configure_logging
@@ -19,7 +20,8 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
+    if settings.app_env.lower() in {"local", "development", "dev"}:
+        init_db()
     ip = get_local_ip()
     logger.info("Backend ready: http://%s:8000", ip)
     yield
@@ -27,10 +29,11 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title=settings.app_name, version="1.0.0", lifespan=lifespan)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.trusted_host_list)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
-    allow_credentials=True,
+    allow_credentials=settings.cors_origin_list != ["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )

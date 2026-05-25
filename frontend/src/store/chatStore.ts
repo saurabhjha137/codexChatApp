@@ -149,6 +149,7 @@ export const useChatStore = create<ChatState>()(
         socket.connect(currentUser.id, {
           onOpen: () => set({ connected: true }),
           onClose: () => set({ connected: false }),
+          onReconnect: (attempt) => set({ toast: `Reconnecting realtime chat... attempt ${attempt}` }),
           onEvent: (event) => get().handleSocketEvent(event),
         });
         set({ socket });
