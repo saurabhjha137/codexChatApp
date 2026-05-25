@@ -25,8 +25,8 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if settings.app_env.lower() in {"local", "development", "dev"}:
-        init_db()
+    # if settings.app_env.lower() in {"local", "development", "dev"}:
+    init_db()
     ip = get_local_ip()
     logger.info("Backend ready: http://%s:8000", ip)
     yield
@@ -38,7 +38,7 @@ app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.trusted_host_li
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
-    allow_credentials=settings.cors_origin_list != ["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
