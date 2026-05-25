@@ -1,0 +1,280 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --radius-lg: 0.9rem;
+  --radius-md: 0.65rem;
+  --shadow-soft: 0 18px 60px rgb(0 0 0 / 0.22);
+  --transition-theme: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+:root[data-theme="dark"] {
+  --bg: #070814;
+  --bg-elevated: #0d1021;
+  --surface: #111528;
+  --surface-soft: #181d33;
+  --surface-hover: #222842;
+  --border: #2a3150;
+  --text: #f8fbff;
+  --text-secondary: #cbd5e1;
+  --text-muted: #93a4b8;
+  --primary: #8b5cf6;
+  --primary-strong: #7c3aed;
+  --secondary: #06b6d4;
+  --accent: #ff4766;
+  --success: #22c55e;
+  --warning: #ffff00;
+  --danger: #fb7185;
+  --bubble-out-start: #22d3ee;
+  --bubble-out-end: #8b5cf6;
+  --bubble-out-text: #ffffff;
+  --bubble-in: #171c31;
+  --bubble-in-text: #f8fbff;
+  --bubble-meta-out: #e9d5ff;
+  --bubble-meta-in: #aab7cf;
+  --reply-bg: rgb(255 255 255 / 0.12);
+  --reply-border: #67e8f9;
+  --glow: 0 0 28px rgb(139 92 246 / 0.42);
+  --app-gradient: radial-gradient(circle at top left, rgb(34 211 238 / 0.22), transparent 32%),
+    radial-gradient(circle at 85% 15%, rgb(244 63 94 / 0.18), transparent 30%),
+    linear-gradient(135deg, #070814 0%, #10142a 52%, #070814 100%);
+}
+
+:root[data-theme="light"] {
+  --bg: #fff7f7;
+  --bg-elevated: #ffffff;
+  --surface: #ffffff;
+  --surface-soft: #fff1f2;
+  --surface-hover: #ffe4e6;
+  --border: #fecdd3;
+  --text: #18181b;
+  --text-secondary: #3f3f46;
+  --text-muted: #71717a;
+  --primary: #dc2626;
+  --primary-strong: #b91c1c;
+  --secondary: #f43f5e;
+  --accent: #991b1b;
+  --success: #16a34a;
+  --warning: #facc15;
+  --danger: #dc2626;
+  --bubble-out-start: #ef4444;
+  --bubble-out-end: #b91c1c;
+  --bubble-out-text: #ffffff;
+  --bubble-in: #ffffff;
+  --bubble-in-text: #111827;
+  --bubble-meta-out: #fff7ed;
+  --bubble-meta-in: #475569;
+  --reply-bg: rgb(220 38 38 / 0.1);
+  --reply-border: #dc2626;
+  --glow: 0 0 24px rgb(220 38 38 / 0.24);
+  --app-gradient: radial-gradient(circle at top left, rgb(239 68 68 / 0.16), transparent 34%),
+    radial-gradient(circle at 86% 18%, rgb(153 27 27 / 0.12), transparent 30%),
+    linear-gradient(135deg, #fff7f7 0%, #ffffff 48%, #fff1f2 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--app-gradient);
+  color: var(--text);
+  font-family: var(--font-sans);
+  transition: var(--transition-theme);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-shell {
+  background: var(--app-gradient);
+  color: var(--text);
+}
+
+.app-panel {
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border-color: var(--border);
+  color: var(--text);
+  backdrop-filter: blur(18px);
+  transition: var(--transition-theme);
+}
+
+.app-panel-soft {
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.app-border {
+  border-color: var(--border);
+}
+
+.text-primary {
+  color: var(--text);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.icon-button {
+  display: inline-flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  transition: var(--transition-theme), transform 150ms ease;
+}
+
+.icon-button:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
+.toolbar-button {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  padding: 0.5rem 0.65rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  transition: var(--transition-theme), transform 150ms ease;
+}
+
+.toolbar-button:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.theme-toggle {
+  position: relative;
+  height: 2rem;
+  width: 4rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  box-shadow: var(--glow);
+  padding: 0.2rem;
+}
+
+.theme-toggle__thumb {
+  display: flex;
+  height: 1.6rem;
+  width: 1.6rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  color: var(--primary);
+  transition: transform 180ms ease;
+}
+
+.avatar {
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  color: white;
+  box-shadow: var(--glow);
+}
+
+.presence-dot {
+  background: var(--success);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 20%, transparent), 0 0 14px var(--success);
+}
+
+.presence-dot-offline {
+  background: var(--text-muted);
+}
+
+.bubble-out {
+  background: linear-gradient(135deg, var(--bubble-out-start), var(--bubble-out-end));
+  color: var(--bubble-out-text);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.2), var(--glow);
+}
+
+.bubble-in {
+  background: var(--bubble-in);
+  color: var(--bubble-in-text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+}
+
+.bubble-meta-out {
+  color: var(--bubble-meta-out);
+}
+
+.bubble-meta-in {
+  color: var(--bubble-meta-in);
+}
+
+.reply-preview {
+  background: var(--reply-bg);
+  border-left: 3px solid var(--reply-border);
+  color: currentColor;
+}
+
+.input-control {
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text);
+  outline: none;
+  transition: var(--transition-theme), box-shadow 150ms ease;
+}
+
+.input-control::placeholder {
+  color: var(--text-muted);
+}
+
+.input-control:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 28%, transparent);
+  border-color: var(--primary);
+}
+
+.primary-button {
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  color: white;
+  box-shadow: var(--glow);
+  transition: transform 150ms ease, filter 150ms ease;
+}
+
+.primary-button:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-soft), var(--surface-hover), var(--surface-soft));
+  background-size: 220% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 220% 0;
+  }
+  100% {
+    background-position: -220% 0;
+  }
+}

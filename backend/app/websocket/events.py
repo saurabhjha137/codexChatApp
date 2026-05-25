@@ -1,0 +1,14 @@
+from enum import StrEnum
+
+
+class WebSocketEventType(StrEnum):
+    PING = "PING"
+    PONG = "PONG"
+    HEARTBEAT = "HEARTBEAT"
+    ERROR = "ERROR"
+    USER_ONLINE = "USER_ONLINE"
+    USER_OFFLINE = "USER_OFFLINE"
+    NEW_MESSAGE = "NEW_MESSAGE"
+    MESSAGE_DELIVERED = "MESSAGE_DELIVERED"
+    MESSAGE_READ = "MESSAGE_READ"
+
