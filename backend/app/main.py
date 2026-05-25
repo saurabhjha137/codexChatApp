@@ -13,6 +13,11 @@ from app.utilities.network import get_local_ip
 from app.utilities.rate_limiter import InMemoryRateLimiter, RateLimitMiddleware
 from app.websocket.manager import manager
 
+
+origins = [
+    "https://codex-chat-app.vercel.app",
+]
+
 settings = get_settings()
 configure_logging(settings)
 logger = logging.getLogger(__name__)
